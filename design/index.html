@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>to do rock – デザイン一覧</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0A0A14;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Inter',sans-serif;padding:40px 20px;gap:40px}
+    h1{font-size:32px;font-weight:800;background:linear-gradient(135deg,#A78BFA,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+    p{font-size:14px;color:#64748B;text-align:center;margin-top:-28px}
+    .grid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:800px}
+    a{text-decoration:none}
+    .card{background:#16162A;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px 28px;width:220px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+    .card:hover{transform:translateY(-4px);border-color:rgba(139,92,246,.5);box-shadow:0 12px 32px rgba(124,58,237,.25)}
+    .card-icon{font-size:32px;margin-bottom:12px}
+    .card-title{font-size:16px;font-weight:700;color:#F1F5F9;margin-bottom:6px}
+    .card-desc{font-size:12px;color:#64748B;line-height:1.5}
+    .badge{display:inline-block;margin-top:10px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(139,92,246,.15);color:#A78BFA;border:1px solid rgba(139,92,246,.25)}
+  </style>
+</head>
+<body>
+  <h1>to do rock</h1>
+  <p>画面デザイン一覧</p>
+  <div class="grid">
+    <a href="home.html" target="_blank">
+      <div class="card">
+        <div class="card-icon">🏠</div>
+        <div class="card-title">ホーム画面</div>
+        <div class="card-desc">Rockのロックリスト・Pebble・Sandのタスク一覧</div>
+        <div class="badge">home.html</div>
+      </div>
+    </a>
+    <a href="task_create_edit.html" target="_blank">
+      <div class="card">
+        <div class="card-icon">✏️</div>
+        <div class="card-title">タスク作成・編集</div>
+        <div class="card-desc">カテゴリ選択・タイトル・期限・サブタスクの入力フォーム</div>
+        <div class="badge">task_create_edit.html</div>
+      </div>
+    </a>
+    <a href="task_detail.html" target="_blank">
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">タスク詳細</div>
+        <div class="card-desc">Rockロック中タスクの閲覧（完了不可状態）</div>
+        <div class="badge">task_detail.html</div>
+      </div>
+    </a>
+    <a href="stats.html" target="_blank">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <div class="card-title">統計・分析</div>
+        <div class="card-desc">Rock攻略番号・連続達成日数・曜日別グラフ</div>
+        <div class="badge">stats.html</div>
+      </div>
+    </a>
+    <a href="calendar.html" target="_blank">
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-title">カレンダー</div>
+        <div class="card-desc">期限付きタスクをカレンダーで管理・Rockロック表示</div>
+        <div class="badge">calendar.html</div>
+      </div>
+    </a>
+  </div>
+</body>
+</html>

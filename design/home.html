@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>to do rock – ホーム</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0A0A14;display:flex;justify-content:center;padding:40px 20px;font-family:'Inter',sans-serif}
+    .phone{width:375px;min-height:812px;background:#0F0F1C;border-radius:40px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06);position:relative;padding-bottom:80px}
+    .status-bar{display:flex;justify-content:space-between;padding:14px 24px 0;font-size:12px;color:#fff;font-weight:600}
+    .header{padding:16px 24px 12px;display:flex;justify-content:space-between;align-items:center}
+    .app-title{font-size:26px;font-weight:800;background:linear-gradient(135deg,#A78BFA,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .header-icons{display:flex;gap:10px}
+    .icon-btn{width:38px;height:38px;background:rgba(255,255,255,.07);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;border:1px solid rgba(255,255,255,.08)}
+    /* Summary */
+    .summary-card{margin:0 24px 16px;background:linear-gradient(135deg,#1a1040,#2d1b69);border-radius:20px;padding:16px 18px;border:1px solid rgba(139,92,246,.35)}
+    .summary-label{font-size:11px;color:#A5B4FC;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+    .rock-progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .rock-progress-text{font-size:13px;font-weight:700;color:#fff}
+    .rock-progress-num{font-size:20px;font-weight:800;color:#fff}
+    .progress-bar{width:100%;height:7px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden;margin-bottom:14px}
+    .progress-fill{height:100%;width:40%;background:linear-gradient(90deg,#7C3AED,#60A5FA);border-radius:99px}
+    .badges{display:flex;gap:8px}
+    .badge{flex:1;background:rgba(255,255,255,.06);border-radius:10px;padding:8px;text-align:center;border:1px solid rgba(255,255,255,.07)}
+    .badge-num{display:block;font-size:15px;font-weight:700;color:#fff;margin:2px 0}
+    .badge-label{font-size:9px;color:#94A3B8;font-weight:500}
+    /* Filter tabs */
+    .filter-tabs{display:flex;gap:8px;padding:0 24px 16px;overflow-x:auto;scrollbar-width:none}
+    .tab{flex-shrink:0;padding:7px 16px;border-radius:99px;font-size:12px;font-weight:600;color:#94A3B8;background:transparent;border:1px solid rgba(255,255,255,.1)}
+    .tab.active{background:linear-gradient(135deg,#7C3AED,#4F46E5);color:#fff;border-color:transparent}
+    /* Task list */
+    .task-list{padding:0 24px;display:flex;flex-direction:column;gap:18px}
+    .section-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .section-title{font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.8px}
+    .section-count{font-size:10px;padding:2px 8px;border-radius:99px;font-weight:700}
+    .rock-count{background:rgba(139,92,246,.15);color:#A78BFA;border:1px solid rgba(139,92,246,.3)}
+    .pebble-count{background:rgba(245,158,11,.12);color:#FCD34D;border:1px solid rgba(245,158,11,.25)}
+    .sand-count{background:rgba(16,185,129,.12);color:#34D399;border:1px solid rgba(16,185,129,.25)}
+    .task-cards{display:flex;flex-direction:column;gap:8px}
+    /* Active Rock card */
+    .task-card{background:#16162A;border-radius:16px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;border:1px solid rgba(255,255,255,.06)}
+    .task-card.active-rock{border-color:rgba(139,92,246,.5);background:#1a1040;box-shadow:0 0 0 1px rgba(139,92,246,.2)}
+    .task-card.locked{opacity:.5}
+    .checkbox{width:22px;height:22px;border-radius:7px;border:2px solid #334155;flex-shrink:0;margin-top:1px}
+    .checkbox.active{border-color:#7C3AED;box-shadow:0 0 0 3px rgba(124,58,237,.2)}
+    .checkbox.done{background:linear-gradient(135deg,#7C3AED,#4F46E5);border-color:transparent;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px}
+    .checkbox.locked-box{background:rgba(255,255,255,.03);border-color:#1E293B;cursor:not-allowed}
+    .task-content{flex:1}
+    .task-num{font-size:10px;font-weight:800;color:#7C3AED;margin-bottom:3px}
+    .task-title{font-size:15px;font-weight:600;color:#E2E8F0;margin-bottom:5px}
+    .task-title.done{text-decoration:line-through;color:#475569}
+    .task-title.locked-title{color:#475569}
+    .task-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .badge-pill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+    .rock-pill{background:rgba(139,92,246,.15);color:#A78BFA;border:1px solid rgba(139,92,246,.3)}
+    .pebble-pill{background:rgba(245,158,11,.15);color:#FCD34D;border:1px solid rgba(245,158,11,.3)}
+    .sand-pill{background:rgba(16,185,129,.15);color:#34D399;border:1px solid rgba(16,185,129,.3)}
+    .lock-icon{font-size:13px;margin-left:auto;align-self:center}
+    .due{font-size:11px;color:#64748B}
+    .due.overdue{color:#F87171}
+    /* Active label */
+    .active-label{font-size:10px;font-weight:700;color:#A78BFA;background:rgba(139,92,246,.15);padding:2px 8px;border-radius:99px;border:1px solid rgba(139,92,246,.3)}
+    /* FAB */
+    .fab{position:absolute;bottom:96px;right:24px;width:56px;height:56px;background:linear-gradient(135deg,#7C3AED,#4F46E5);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;box-shadow:0 8px 24px rgba(124,58,237,.5)}
+    /* Bottom nav */
+    .bottom-nav{position:absolute;bottom:0;left:0;right:0;height:80px;background:rgba(15,15,28,.95);border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-around;align-items:center;padding:0 16px 16px}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+    .nav-icon{font-size:22px}
+    .nav-label{font-size:10px;color:#475569;font-weight:500}
+    .nav-item.active .nav-label{color:#A78BFA}
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+  <div class="header">
+    <div class="app-title">to do rock</div>
+    <div class="header-icons">
+      <div class="icon-btn">🔍</div>
+      <div class="icon-btn">⚙️</div>
+    </div>
+  </div>
+  <!-- Summary -->
+  <div class="summary-card">
+    <div class="summary-label">🔒 Rock 進捗</div>
+    <div class="rock-progress-row">
+      <span class="rock-progress-text">今日のRock</span>
+      <span class="rock-progress-num">#2 / 5</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="badges">
+      <div class="badge"><div>🪨</div><span class="badge-num">3</span><span class="badge-label">Pebble残</span></div>
+      <div class="badge"><div>🏖️</div><span class="badge-num">2</span><span class="badge-label">Sand残</span></div>
+      <div class="badge"><div>🔥</div><span class="badge-num">5日</span><span class="badge-label">連続達成</span></div>
+    </div>
+  </div>
+  <!-- Filter -->
+  <div class="filter-tabs">
+    <div class="tab active">すべて</div>
+    <div class="tab">🔒 Rock</div>
+    <div class="tab">🪨 Pebble</div>
+    <div class="tab">🏖️ Sand</div>
+    <div class="tab">完了済み</div>
+  </div>
+  <!-- Task List -->
+  <div class="task-list">
+    <!-- Rock Section -->
+    <div>
+      <div class="section-header">
+        <span class="section-title">🔒 Rock</span>
+        <span class="section-count rock-count">順番制</span>
+      </div>
+      <div class="task-cards">
+        <!-- Completed Rock -->
+        <div class="task-card">
+          <div class="checkbox done">✓</div>
+          <div class="task-content">
+            <div class="task-num">#1 完了済み</div>
+            <div class="task-title done">チームに今週の目標を共有する</div>
+          </div>
+        </div>
+        <!-- Active Rock -->
+        <div class="task-card active-rock">
+          <div class="checkbox active"></div>
+          <div class="task-content">
+            <div class="task-num" style="display:flex;align-items:center;gap:6px">#2 <span class="active-label">▶ 今ここ</span></div>
+            <div class="task-title">企画書の最終レビューを完了させる</div>
+            <div class="task-meta"><span class="badge-pill rock-pill">🔒 Rock</span><span class="due overdue">⏰ 今日まで</span></div>
+          </div>
+        </div>
+        <!-- Locked Rock -->
+        <div class="task-card locked">
+          <div class="checkbox locked-box"></div>
+          <div class="task-content">
+            <div class="task-num">#3</div>
+            <div class="task-title locked-title">議事録をSlackに投稿する</div>
+            <div class="task-meta"><span class="badge-pill rock-pill">🔒 Rock</span></div>
+          </div>
+          <div class="lock-icon">🔒</div>
+        </div>
+        <div class="task-card locked">
+          <div class="checkbox locked-box"></div>
+          <div class="task-content">
+            <div class="task-num">#4</div>
+            <div class="task-title locked-title">週次レポートを作成する</div>
+            <div class="task-meta"><span class="badge-pill rock-pill">🔒 Rock</span></div>
+          </div>
+          <div class="lock-icon">🔒</div>
+        </div>
+      </div>
+    </div>
+    <!-- Pebble Section -->
+    <div>
+      <div class="section-header">
+        <span class="section-title">🪨 Pebble</span>
+        <span class="section-count pebble-count">自由順</span>
+      </div>
+      <div class="task-cards">
+        <div class="task-card">
+          <div class="checkbox"></div>
+          <div class="task-content">
+            <div class="task-title">Slackのメッセージに返信する</div>
+            <div class="task-meta"><span class="badge-pill pebble-pill">🪨 Pebble</span><span class="due">📅 明日</span></div>
+          </div>
+        </div>
+        <div class="task-card">
+          <div class="checkbox"></div>
+          <div class="task-content">
+            <div class="task-title">資料の整理をする</div>
+            <div class="task-meta"><span class="badge-pill pebble-pill">🪨 Pebble</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Sand Section -->
+    <div>
+      <div class="section-header">
+        <span class="section-title">🏖️ Sand</span>
+        <span class="section-count sand-count">自由順</span>
+      </div>
+      <div class="task-cards">
+        <div class="task-card">
+          <div class="checkbox"></div>
+          <div class="task-content">
+            <div class="task-title">読みたい記事をまとめる</div>
+            <div class="task-meta"><span class="badge-pill sand-pill">🏖️ Sand</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+  <div class="fab">＋</div>
+  <div class="bottom-nav">
+    <div class="nav-item active"><div class="nav-icon">🏠</div><div class="nav-label" style="color:#A78BFA">ホーム</div></div>
+    <div class="nav-item"><div class="nav-icon">📅</div><div class="nav-label">カレンダー</div></div>
+    <div class="nav-item"><div class="nav-icon">📊</div><div class="nav-label">統計</div></div>
+  </div>
+</div>
+</body>
+</html>
