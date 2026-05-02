@@ -113,4 +113,29 @@ class HomeViewModel extends _$HomeViewModel {
     await repo.deleteTask(id);
     state = _loadState(state);
   }
+
+  Future<void> reorderRockTasks(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final rocks = List<Task>.from(state.rockTasks);
+    final item = rocks.removeAt(oldIndex);
+    rocks.insert(newIndex, item);
+    
+    // 即座にUIに反映させる
+    state = state.copyWith(rockTasks: rocks);
+    
+    // バックグラウンドで永続化
+    final repo = ref.read(taskRepositoryProvider);
+    await repo.reorderRockTasks(rocks);
+    // 保存後に正規化されたデータを再読み込み
+    state = _loadState(state);
+  }
+
+  /// 完了済みタスクをアーカイブ（一覧から消えるが統計に残る）
+  Future<void> archiveTask(String id) async {
+    final repo = ref.read(taskRepositoryProvider);
+    await repo.archiveTask(id);
+    state = _loadState(state);
+  }
 }

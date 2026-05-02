@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:confetti/confetti.dart';
+import 'dart:math';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/task.dart';
 import '../../domain/task_category.dart';
@@ -14,9 +17,12 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  late ConfettiController _confettiController;
+
   @override
   void initState() {
     super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
     // 画面復帰時にリロード
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(homeViewModelProvider.notifier).reload();
@@ -24,11 +30,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 
   @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state = ref.watch(homeViewModelProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -40,7 +54,10 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ref.read(homeViewModelProvider.notifier).setFilter(f),
             ),
             Expanded(
-              child: _TaskList(state: state),
+              child: _TaskList(
+                state: state,
+                onConfetti: () => _confettiController.play(),
+              ),
             ),
           ],
         ),
@@ -66,6 +83,20 @@ class _HomeViewState extends ConsumerState<HomeView> {
           NavigationDestination(icon: Icon(Icons.bar_chart_rounded), label: '統計'),
         ],
       ),
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirection: pi / 2, // 下向き
+            maxBlastForce: 20,
+            minBlastForce: 10,
+            emissionFrequency: 0.05,
+            numberOfParticles: 20,
+            gravity: 0.2,
+          ),
+        ),
+      ],
     );
   }
 
@@ -291,8 +322,12 @@ class _FilterTabs extends StatelessWidget {
 // ─── Task List ────────────────────────────────────────────────────────────────
 
 class _TaskList extends ConsumerWidget {
-  const _TaskList({required this.state});
+  const _TaskList({
+    required this.state,
+    required this.onConfetti,
+  });
   final HomeState state;
+  final VoidCallback onConfetti;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -308,18 +343,31 @@ class _TaskList extends ConsumerWidget {
               badgeLabel: '順番制',
               badgeColor: AppColors.rock,
             ),
-            ...state.rockTasks.map(
-              (t) => _RockTaskCard(
-                task: t,
-                isActive: state.isRockActive(t),
-                isLocked: state.isRockLocked(t),
-                onComplete: () =>
-                    ref.read(homeViewModelProvider.notifier).completeTask(t.id),
-                onTap: () async {
-                  await context.push('/task/${t.id}');
-                  ref.read(homeViewModelProvider.notifier).reload();
-                },
+            ReorderableListView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              proxyDecorator: (child, index, animation) => Material(
+                color: Colors.transparent,
+                child: child,
               ),
+              onReorder: (oldIndex, newIndex) => 
+                  ref.read(homeViewModelProvider.notifier).reorderRockTasks(oldIndex, newIndex),
+              children: state.rockTasks.map(
+                (t) => _RockTaskCard(
+                  key: ValueKey(t.id), // ドラッグ＆ドロップにはkeyが必須
+                  task: t,
+                  isActive: state.isRockActive(t),
+                  isLocked: state.isRockLocked(t),
+                  onComplete: () {
+                    ref.read(homeViewModelProvider.notifier).completeTask(t.id);
+                    onConfetti();
+                  },
+                  onTap: () async {
+                    await context.push('/task/${t.id}');
+                    ref.read(homeViewModelProvider.notifier).reload();
+                  },
+                ),
+              ).toList(),
             ),
             const SizedBox(height: 18),
           ],
@@ -337,8 +385,10 @@ class _TaskList extends ConsumerWidget {
               (t) => _FreeTaskCard(
                 task: t,
                 category: TaskCategory.pebble,
-                onComplete: () =>
-                    ref.read(homeViewModelProvider.notifier).completeTask(t.id),
+                onComplete: () {
+                  ref.read(homeViewModelProvider.notifier).completeTask(t.id);
+                  onConfetti();
+                },
                 onTap: () async {
                   await context.push('/task/${t.id}');
                   ref.read(homeViewModelProvider.notifier).reload();
@@ -361,8 +411,10 @@ class _TaskList extends ConsumerWidget {
               (t) => _FreeTaskCard(
                 task: t,
                 category: TaskCategory.sand,
-                onComplete: () =>
-                    ref.read(homeViewModelProvider.notifier).completeTask(t.id),
+                onComplete: () {
+                  ref.read(homeViewModelProvider.notifier).completeTask(t.id);
+                  onConfetti();
+                },
                 onTap: () async {
                   await context.push('/task/${t.id}');
                   ref.read(homeViewModelProvider.notifier).reload();
@@ -382,9 +434,12 @@ class _TaskList extends ConsumerWidget {
             ),
             ...state.completedTasks.map(
               (t) => _CompletedTaskCard(
+                key: ValueKey(t.id),
                 task: t,
                 onUncomplete: () =>
                     ref.read(homeViewModelProvider.notifier).uncompleteTask(t.id),
+                onArchive: () =>
+                    ref.read(homeViewModelProvider.notifier).archiveTask(t.id),
               ),
             ),
           ] else
@@ -454,6 +509,7 @@ class _SectionHeader extends StatelessWidget {
 
 class _RockTaskCard extends StatelessWidget {
   const _RockTaskCard({
+    super.key,
     required this.task,
     required this.isActive,
     required this.isLocked,
@@ -685,62 +741,124 @@ class _FreeTaskCard extends StatelessWidget {
 // ─── Completed Task Card ──────────────────────────────────────────────────────
 
 class _CompletedTaskCard extends StatelessWidget {
-  const _CompletedTaskCard({required this.task, required this.onUncomplete});
+  const _CompletedTaskCard({
+    super.key,
+    required this.task,
+    required this.onUncomplete,
+    required this.onArchive,
+  });
   final Task task;
   final VoidCallback onUncomplete;
+  final VoidCallback onArchive;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+    return Dismissible(
+      key: ValueKey('dismissible_${task.id}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1e1e2e),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              '一覧から非表示にする？',
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+            content: const Text(
+              '完了記録は統計に残ります。',
+              style: TextStyle(color: Color(0xFF888899), fontSize: 13),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('キャンセル', style: TextStyle(color: Color(0xFF888899))),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('非表示にする', style: TextStyle(color: Color(0xFFf87171))),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
+      onDismissed: (_) => onArchive(),
+      // endToStart方向にはsecondaryBackgroundを使う
+      background: Container(color: Colors.transparent),
+      secondaryBackground: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF7f1d1d),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.archive_rounded, color: Colors.white70, size: 22),
+            SizedBox(height: 3),
+            Text(
+              '非表示',
+              style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: onUncomplete,
-            child: Container(
-              width: 22,
-              height: 22,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: onUncomplete,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: const Icon(Icons.check, size: 14, color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                task.title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textDisabled,
+                  decoration: TextDecoration.lineThrough,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(7),
+                color: task.category == TaskCategory.rock
+                    ? AppColors.rockBg
+                    : task.category == TaskCategory.pebble
+                        ? AppColors.pebbleBg
+                        : AppColors.sandBg,
+                borderRadius: BorderRadius.circular(99),
               ),
-              child: const Icon(Icons.check, size: 14, color: Colors.white),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              task.title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDisabled,
-                decoration: TextDecoration.lineThrough,
+              child: Text(
+                task.category.emoji,
+                style: const TextStyle(fontSize: 10),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: task.category == TaskCategory.rock
-                  ? AppColors.rockBg
-                  : task.category == TaskCategory.pebble
-                      ? AppColors.pebbleBg
-                      : AppColors.sandBg,
-              borderRadius: BorderRadius.circular(99),
-            ),
-            child: Text(
-              task.category.emoji,
-              style: const TextStyle(fontSize: 10),
-            ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_left_rounded, color: AppColors.textDisabled, size: 16),
+          ],
+        ),
       ),
     );
   }

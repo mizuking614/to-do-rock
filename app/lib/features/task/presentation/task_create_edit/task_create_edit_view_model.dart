@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/task_repository.dart';
 import '../../domain/task_category.dart';
 import '../../domain/sub_task.dart';
+import '../../../../core/services/notification_service.dart';
 
 part 'task_create_edit_view_model.g.dart';
 
@@ -87,8 +88,17 @@ class TaskCreateEditViewModel extends _$TaskCreateEditViewModel {
         subTasks: state.subTasks,
         isRepeating: state.isRepeating,
       ));
+      if (state.dueDate != null) {
+        ref.read(notificationServiceProvider).scheduleTaskNotification(
+          id: state.taskId.hashCode,
+          title: state.title.trim(),
+          dueDate: state.dueDate!,
+        );
+      } else {
+        ref.read(notificationServiceProvider).cancelNotification(state.taskId.hashCode);
+      }
     } else {
-      await repo.createTask(
+      final task = await repo.createTask(
         title: state.title.trim(),
         category: state.category,
         memo: state.memo,
@@ -96,6 +106,13 @@ class TaskCreateEditViewModel extends _$TaskCreateEditViewModel {
         subTasks: state.subTasks,
         isRepeating: state.isRepeating,
       );
+      if (state.dueDate != null) {
+        ref.read(notificationServiceProvider).scheduleTaskNotification(
+          id: task.id.hashCode,
+          title: task.title,
+          dueDate: state.dueDate!,
+        );
+      }
     }
     return true;
   }

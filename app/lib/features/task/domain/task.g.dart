@@ -26,6 +26,7 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
       ? null
       : DateTime.parse(json['completedAt'] as String),
   isRepeating: json['isRepeating'] as bool? ?? false,
+  isArchived: json['isArchived'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
@@ -41,6 +42,7 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'completedAt': instance.completedAt?.toIso8601String(),
       'isRepeating': instance.isRepeating,
+      'isArchived': instance.isArchived,
     };
 
 const _$TaskCategoryEnumMap = {

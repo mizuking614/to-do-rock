@@ -35,6 +35,9 @@ mixin _$Task {
   DateTime? get completedAt => throw _privateConstructorUsedError;
   bool get isRepeating => throw _privateConstructorUsedError;
 
+  /// 完了済みを一覧から非表示にする（統計には残る）
+  bool get isArchived => throw _privateConstructorUsedError;
+
   /// Serializes this Task to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
@@ -61,6 +64,7 @@ abstract class $TaskCopyWith<$Res> {
     DateTime createdAt,
     DateTime? completedAt,
     bool isRepeating,
+    bool isArchived,
   });
 }
 
@@ -90,6 +94,7 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? createdAt = null,
     Object? completedAt = freezed,
     Object? isRepeating = null,
+    Object? isArchived = null,
   }) {
     return _then(
       _value.copyWith(
@@ -137,6 +142,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.isRepeating
                 : isRepeating // ignore: cast_nullable_to_non_nullable
                       as bool,
+            isArchived: null == isArchived
+                ? _value.isArchived
+                : isArchived // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -163,6 +172,7 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     DateTime createdAt,
     DateTime? completedAt,
     bool isRepeating,
+    bool isArchived,
   });
 }
 
@@ -189,6 +199,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? completedAt = freezed,
     Object? isRepeating = null,
+    Object? isArchived = null,
   }) {
     return _then(
       _$TaskImpl(
@@ -236,6 +247,10 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.isRepeating
             : isRepeating // ignore: cast_nullable_to_non_nullable
                   as bool,
+        isArchived: null == isArchived
+            ? _value.isArchived
+            : isArchived // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -256,6 +271,7 @@ class _$TaskImpl implements _Task {
     required this.createdAt,
     this.completedAt,
     this.isRepeating = false,
+    this.isArchived = false,
   }) : _subTasks = subTasks;
 
   factory _$TaskImpl.fromJson(Map<String, dynamic> json) =>
@@ -296,9 +312,14 @@ class _$TaskImpl implements _Task {
   @JsonKey()
   final bool isRepeating;
 
+  /// 完了済みを一覧から非表示にする（統計には残る）
+  @override
+  @JsonKey()
+  final bool isArchived;
+
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, category: $category, isDone: $isDone, rockOrder: $rockOrder, dueDate: $dueDate, memo: $memo, subTasks: $subTasks, createdAt: $createdAt, completedAt: $completedAt, isRepeating: $isRepeating)';
+    return 'Task(id: $id, title: $title, category: $category, isDone: $isDone, rockOrder: $rockOrder, dueDate: $dueDate, memo: $memo, subTasks: $subTasks, createdAt: $createdAt, completedAt: $completedAt, isRepeating: $isRepeating, isArchived: $isArchived)';
   }
 
   @override
@@ -321,7 +342,9 @@ class _$TaskImpl implements _Task {
             (identical(other.completedAt, completedAt) ||
                 other.completedAt == completedAt) &&
             (identical(other.isRepeating, isRepeating) ||
-                other.isRepeating == isRepeating));
+                other.isRepeating == isRepeating) &&
+            (identical(other.isArchived, isArchived) ||
+                other.isArchived == isArchived));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -339,6 +362,7 @@ class _$TaskImpl implements _Task {
     createdAt,
     completedAt,
     isRepeating,
+    isArchived,
   );
 
   /// Create a copy of Task
@@ -368,6 +392,7 @@ abstract class _Task implements Task {
     required final DateTime createdAt,
     final DateTime? completedAt,
     final bool isRepeating,
+    final bool isArchived,
   }) = _$TaskImpl;
 
   factory _Task.fromJson(Map<String, dynamic> json) = _$TaskImpl.fromJson;
@@ -396,6 +421,10 @@ abstract class _Task implements Task {
   DateTime? get completedAt;
   @override
   bool get isRepeating;
+
+  /// 完了済みを一覧から非表示にする（統計には残る）
+  @override
+  bool get isArchived;
 
   /// Create a copy of Task
   /// with the given fields replaced by the non-null parameter values.

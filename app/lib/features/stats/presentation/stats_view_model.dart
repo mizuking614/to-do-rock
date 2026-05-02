@@ -14,7 +14,7 @@ class StatsViewModel extends _$StatsViewModel {
 
   StatsState _compute(StatsPeriod period) {
     final repo = ref.read(taskRepositoryProvider);
-    final all = repo.getAll();
+    final all = repo.getAllIncludingArchived(); // アーカイブ済みも統計に含める
     final now = DateTime.now();
 
     DateTime? from;
@@ -33,7 +33,11 @@ class StatsViewModel extends _$StatsViewModel {
       }).toList();
     }
 
-    final rocks = repo.getRockTasks();
+    // allはアーカイブ済みを含むので統計に正しく反映される
+    final rocks = all
+        .where((t) => t.category == TaskCategory.rock)
+        .toList()
+      ..sort((a, b) => (a.rockOrder ?? 0).compareTo(b.rockOrder ?? 0));
     final pebbles = all.where((t) => t.category == TaskCategory.pebble).toList();
     final sands = all.where((t) => t.category == TaskCategory.sand).toList();
 

@@ -25,7 +25,16 @@ class TaskRepository {
 
   // ---- Read ----
 
+  /// アーカイブ済みを除いた全タスク（通常の操作に使用）
   List<Task> getAll() {
+    return _box.values
+        .map((json) => Task.fromJson(jsonDecode(json) as Map<String, dynamic>))
+        .where((t) => !t.isArchived)
+        .toList();
+  }
+
+  /// アーカイブ済みも含む全タスク（統計に使用）
+  List<Task> getAllIncludingArchived() {
     return _box.values
         .map((json) => Task.fromJson(jsonDecode(json) as Map<String, dynamic>))
         .toList();
@@ -94,6 +103,7 @@ class TaskRepository {
     await _box.put(task.id, jsonEncode(task.toJson()));
   }
 
+  /// 物理削除（データも統計からも完全に消える）
   Future<void> deleteTask(String id) async {
     await _box.delete(id);
     // Rockの場合は順番を詰め直す
@@ -102,6 +112,14 @@ class TaskRepository {
       final updated = rocks[i].copyWith(rockOrder: i);
       await _box.put(updated.id, jsonEncode(updated.toJson()));
     }
+  }
+
+  /// アーカイブ（一覧から非表示にするが統計には残る）
+  Future<void> archiveTask(String id) async {
+    final all = getAllIncludingArchived();
+    final task = all.firstWhere((t) => t.id == id);
+    final archived = task.copyWith(isArchived: true);
+    await _box.put(archived.id, jsonEncode(archived.toJson()));
   }
 
   Future<Task> completeTask(String id) async {
