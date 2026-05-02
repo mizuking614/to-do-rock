@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 final notificationServiceProvider = Provider((ref) => NotificationService());
 
@@ -9,6 +10,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    if (kIsWeb) return;
+
     tz.initializeTimeZones();
     // デフォルトのタイムゾーンをデバイスに合わせる (簡易的にAsia/Tokyo固定にする等でも可。ここではAsia/Tokyo)
     tz.setLocalLocation(tz.getLocation('Asia/Tokyo'));
@@ -33,6 +36,7 @@ class NotificationService {
 
   /// 通知の権限リクエスト
   Future<void> requestPermissions() async {
+    if (kIsWeb) return;
     await _plugin
         .resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>()
@@ -50,6 +54,7 @@ class NotificationService {
     required String title,
     required DateTime dueDate,
   }) async {
+    if (kIsWeb) return;
     // 期限の日の朝9時に通知（すでに過ぎている場合はスケジュールしない）
     var scheduleDate = DateTime(dueDate.year, dueDate.month, dueDate.day, 9, 0);
     if (scheduleDate.isBefore(DateTime.now())) {
@@ -84,6 +89,7 @@ class NotificationService {
 
   /// 通知のキャンセル
   Future<void> cancelNotification(int id) async {
+    if (kIsWeb) return;
     await _plugin.cancel(id);
   }
 }
